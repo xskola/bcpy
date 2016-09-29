@@ -1,0 +1,51 @@
+#!/usr/bin/python
+
+import os
+import sys
+sys.path.append(os.path.abspath('..'))
+import bcpy
+from bcpy.erd import erd
+
+duration = 4
+baseline = 2
+offset = 0.5
+
+
+def print_mi_erds():
+    ch0 = "C4"
+    ch1 = "C3"
+    eegdata.filter_channel(8, 30, ch0)
+    eegdata.filter_channel(8, 30, ch1)
+    eegdata.compute_erds_using_squared(ch0, 769, offset, duration, baseline)
+    #eegdata.compute_erds_using_fft(ch0, 8, 30, 769, offset, duration, baseline)
+    eegdata.compute_erds_using_squared(ch1, 770, offset, duration, baseline)
+    #eegdata.compute_erds_using_fft(ch1, 8, 30, 770, offset, duration, baseline)
+
+
+def get_cspd_erd():
+    ch0 = "sFiltered 0"
+    ch1 = "sFiltered 1"
+    def compute():
+        erd1 = eegdata.compute_erds_using_squared(ch0, 769, offset,
+                                                  duration, baseline)
+        erd2 = eegdata.compute_erds_using_squared(ch1, 770, offset,
+                                                  duration, baseline)
+        return erd1, erd2
+
+    erd1, erd2 = compute()
+    ch0, ch1 = ch1, ch0
+    erd3, erd4 = compute()
+
+    if erd1 + erd2 < erd3 + erd4:
+        print "conf1"
+        return erd1, erd2
+    else:
+        print "conf2"
+        return erd3, erd4
+
+eegdata = bcpy.BCPy(str(sys.argv[1]), str(sys.argv[2]))
+eegdata.filter_channels(8,30)
+eegdata.compute_bp()
+erd1, erd2 = get_cspd_erd()
+print "L: " + str("%.2f" % float(erd1)) + "%"
+print "R: " + str("%.2f" % float(erd2)) + "%"

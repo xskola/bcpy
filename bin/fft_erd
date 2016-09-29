@@ -1,0 +1,12 @@
+#!/usr/bin/python
+
+import os
+import sys
+sys.path.append(os.path.abspath('..'))
+import bcpy
+
+eegdata = bcpy.BCPy(str(sys.argv[1]), str(sys.argv[2]))
+eegdata.filter_channel(8, 12, "C4")
+eegdata.filter_channel(8, 12, "C3")
+eegdata.compute_erds_using_fft("C4", 8, 12, 769)
+eegdata.compute_erds_using_squared("C4", 769)

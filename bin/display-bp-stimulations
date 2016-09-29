@@ -1,0 +1,32 @@
+#!/usr/bin/python
+
+import os
+import sys
+sys.path.append(os.path.abspath('..'))
+import bcpy
+import bcpy.bp
+
+
+def use_the_slow_and_correct_plot_function():
+    signal.plot(bcpy.bp.get_epoched_bandpowers_orig(signal.squared_channels,
+                                                    res))
+
+
+def plot_all():
+    signal.plot(signal.get_epoched_bandpowers(res))
+
+
+def plot_mi():
+    """Plot motor imagery channels; C3 & C4"""
+    signal.plot(signal.get_epoched_bandpower("C3", res))
+    signal.plot(signal.get_epoched_bandpower("C4", res))
+
+
+res = 0.2  # BP sliding window length (in seconds)
+
+signal = bcpy.BCPy(str(sys.argv[1]), str(sys.argv[2]))
+signal.plot_stimulations()
+signal.filter_channels(8, 30)
+#plot_mi()
+plot_all()
+signal.plot_show()

@@ -1,0 +1,20 @@
+#!/usr/bin/python
+
+import os
+import sys
+sys.path.append(os.path.abspath('..'))
+import bcpy
+
+eegdata = bcpy.BCPy(str(sys.argv[1]), str(sys.argv[2]))
+eegdata.filter_channel(8, 12, "C4")
+eegdata.filter_channel(8, 12, "C3")
+#eegdata.compute_erds_using_fft("C4", 8, 12, 769)
+#eegdata.compute_mi_erds(112, 155)
+#eegdata.compute_erds_using_squared("C4", 769)
+#print eegdata.compute_avg_prestimul_bp("C3", [800])
+import bcpy.stimul
+#print bcpy.stimul.compute_avg_prestimul_bps_fft(eegdata.channels, eegdata.header, eegdata.stimul_times, [769], 2)
+#bcpy.stimul.compute_bp_around_stimuli(eegdata.channels, 500, eegdata.stimul_times, "C4", 769, 8, 12, 0.5, 2, 8)
+bcpy.stimul.compute_bp_around_stimuli2(eegdata.channels, 500, eegdata.stimul_times, "C4", 769, 8, 12, 0.5, 2, 1)
+bcpy.stimul.compute_bp_around_stimuli2(eegdata.channels, 500, eegdata.stimul_times, "C3", 770, 8, 12, 0.5, 2, 1)
+eegdata.plot_show()
