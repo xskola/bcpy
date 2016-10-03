@@ -312,3 +312,9 @@ class BCPy:
     def plot_show(self):
         """Invoke plt.show()."""
         plt.show()
+
+# Edit functions
+
+    def cutout_epoch(self, low, high):
+        """Remove chunk of signal data from class' channels variable."""
+        self.channels = funcs.cutout_epoch(self.channels, low, high)

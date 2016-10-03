@@ -1,0 +1,18 @@
+#!/usr/bin/python
+# Remove selected signal bits defined by time.
+# Eats signal file.
+
+import os
+import sys
+sys.path.append(os.path.abspath('..'))
+import bcpy
+
+signal = bcpy.BCPy(str(sys.argv[1]))
+signal.plot_channels()
+signal.plot_show()  # plot the original file
+signal.cutout_epoch(2, 7)  # remove seconds 2-7 from the signal
+signal.cutout_epoch(20, float("inf"))  # remove from 20th sec to the end
+signal.plot_channels()  # show the result
+signal.plot_show()
+# signal.write_csv(str(sys.argv[2]))
+# Write output to another file.

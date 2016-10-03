@@ -37,6 +37,29 @@ def get_epoch(struct, low, high):
         return epoch
 
 
+def cutout_epoch(struct, low, high):
+    """Remove a chunk of channel data defined by its Time boundaries."""
+    if type(struct) is list:
+        raise TypeError('Cutting out is supported only for dicts.')
+        # We might want to do this even for lists in the Future.
+        return
+
+    if low == 0:
+        piece1 = dict.fromkeys(struct, [])
+    else:
+        piece1 = get_epoch(struct, 0, low)
+    if high == float("inf"):
+        piece2 = dict.fromkeys(struct, [])
+    else:
+        piece2 = get_epoch(struct, high, float("inf"))
+
+    result = dict()
+    for key in struct:
+        result[key] = piece1[key] + piece2[key]
+
+    return result
+
+
 def get_channels_avgs(channels):
     """Compute average values for all keys in given dict of channels."""
     output = dict()
