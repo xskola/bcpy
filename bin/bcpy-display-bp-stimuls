@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# Display epoched bandpowers of signal and stimulation timings
+# eats signal csv (first parameter) and stimulations file (second parameter)
 
 import os
 import sys
@@ -27,6 +29,6 @@ res = 0.2  # BP sliding window length (in seconds)
 signal = bcpy.BCPy(str(sys.argv[1]), str(sys.argv[2]))
 signal.plot_stimulations()
 signal.filter_channels(8, 30)
-#plot_mi()
+# plot_mi()
 plot_all()
 signal.plot_show()

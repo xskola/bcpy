@@ -1,0 +1,16 @@
+#!/usr/bin/python
+# Only display signal.
+# Eats signal file.
+
+import os
+import sys
+sys.path.append(os.path.abspath('..'))
+import bcpy
+
+signal = bcpy.BCPy(str(sys.argv[1]))
+# signal.filter_channel(1, 40)
+# Activate 1-40 Hz filter
+signal.plot_channels()
+signal.plot_show()
+# signal.write_csv("output.csv")
+# Write output to another file. Useful (e.g.) if filtering was engaged.

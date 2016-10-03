@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# Compute event-related de/synchronizations (ERD/Ss) around stimulation points
+# Eats signal and stimulation files
 
 import os
 import sys
@@ -17,14 +19,13 @@ def print_mi_erds():
     eegdata.filter_channel(8, 30, ch0)
     eegdata.filter_channel(8, 30, ch1)
     eegdata.compute_erds_using_squared(ch0, 769, offset, duration, baseline)
-    #eegdata.compute_erds_using_fft(ch0, 8, 30, 769, offset, duration, baseline)
     eegdata.compute_erds_using_squared(ch1, 770, offset, duration, baseline)
-    #eegdata.compute_erds_using_fft(ch1, 8, 30, 770, offset, duration, baseline)
 
 
 def get_cspd_erd():
     ch0 = "sFiltered 0"
     ch1 = "sFiltered 1"
+
     def compute():
         erd1 = eegdata.compute_erds_using_squared(ch0, 769, offset,
                                                   duration, baseline)
@@ -44,7 +45,7 @@ def get_cspd_erd():
         return erd3, erd4
 
 eegdata = bcpy.BCPy(str(sys.argv[1]), str(sys.argv[2]))
-eegdata.filter_channels(8,30)
+eegdata.filter_channels(8, 30)
 eegdata.compute_bp()
 erd1, erd2 = get_cspd_erd()
 print "L: " + str("%.2f" % float(erd1)) + "%"
