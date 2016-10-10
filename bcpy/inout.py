@@ -1,5 +1,6 @@
 import csv
 import sys
+import logging
 
 
 def get_csv_content(infile):
@@ -26,11 +27,30 @@ def get_csv_content(infile):
     return textvalues
 
 
-def extract_ov_header(textvalues):
+def extract_ov_header(textvalues, create_faketime=False):
     """Extract channel info from Openvibe CSV, also get sampling frequency."""
     header = list()
     initheader = textvalues[0][:]
     freq_present = False
+
+    # If there is a number on the first line of given CSV,
+    # it is not the header format we know. We create stuff then.
+    try:
+        val = float(textvalues[0][0])
+    except ValueError:
+        pass
+    else:
+        logging.info("The header appears to be missing")
+        header = ["ch" + str(x) for x in iter(
+            range(1, 1+len(textvalues[0][:])))]
+        logging.info("Created dummy channel names '%s'", header)
+        # If header is missing, we create faketime. Function compute_numvalues
+        # is responsible for this step and for renaming Faketime back to Time.
+        #
+        # However, we assume that no header means no time field in CSV.
+        # This behaviour may be found inappropriate and reverted in da future.
+        header.insert(0, "Faketime")
+        return header, None
 
     for field in initheader:
         if field == "Time (s)":
@@ -60,11 +80,30 @@ def extract_ov_header(textvalues):
     return header, freq
 
 
-def compute_numvalues(textvalues):
+def compute_numvalues(textvalues, header, sampling_frequency=None):
     """Convert CSV values to numerical bits in lists."""
     numvalues = list()
+    faketime = 0
+    create_faketime = False
+
+    if header[0] == "Faketime":
+        create_faketime = True
+        if sampling_frequency is None:
+            faketime_step = 1
+            logging.warning("Could not determine sampling frequency, "
+                            "fake time values will equal recorded frames.")
+            logging.info("You should provide sampling frequency using a "
+                         "sampling_frequency attribute in BCPy constructor."
+                         "Some functions won't work properly otherwise.")
+        else:
+            faketime_step = 1.0/sampling_frequency
+            logging.info("Fake time values created out of sampling frequency")
+
     for row in textvalues:
         numrow = list()
+        if create_faketime:
+            numrow.append(faketime)
+            faketime += faketime_step
         for field in row:
             try:
                 numfield = float(field)
@@ -74,14 +113,20 @@ def compute_numvalues(textvalues):
 
         if not numrow == []:
             numvalues.append(numrow)
-    return numvalues
+    if create_faketime:
+        header[0] = "Time"
+    return header, numvalues
 
 
-def read_ov_file(infile):
+def read_ov_file(infile, sampling_frequency=None):
     """Set of actions to handle an Openvibe-generated CSV."""
     textvalues = get_csv_content(infile)
     header, freq = extract_ov_header(textvalues)
-    numvalues = compute_numvalues(textvalues)
+    header, numvalues = compute_numvalues(textvalues, header,
+                                          sampling_frequency)
+    if sampling_frequency is not None:
+        freq = sampling_frequency
+        # override read value if any other is given
     return header, numvalues, freq
 
 
