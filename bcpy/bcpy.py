@@ -33,8 +33,6 @@ class BCPy:
 
         self.header, self.values, self.sampling_freq = inout.read_ov_file(
             infile, sampling_frequency)
-        if self.sampling_freq is None:
-            self.sampling_freq = 500
         self.channels_from_values()
 
     def read_ov_stimulations(self, infile):
@@ -245,7 +243,7 @@ class BCPy:
         plt.xlabel('Time')
         plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=1,
                    ncol=2, mode="expand", borderaxespad=0.)
-        plt.xlim(20, 22)  # what do you think about these defaults?
+        plt.xlim(15, 50)  # what do you think about these defaults?
         # plt.ylim(-450, 450)
         plt.autoscale(enable=False)
 
