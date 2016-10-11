@@ -1,0 +1,21 @@
+#!/usr/bin/python
+# Only display signal, use external header file.
+# Eats signal file and header file.
+
+# External header file is CSV with channel names,
+# if Time column is not present, it will be computed
+# out of sampling_frequency parameter.
+
+import os
+import sys
+sys.path.append(os.path.abspath('..'))
+import bcpy
+
+signal = bcpy.BCPy(signal=str(sys.argv[1]),
+                   header=str(sys.argv[2]),
+                   sampling_frequency=500)
+signal.filter_channels(1, 45)
+# ...
+# ...
+signal.plot_channels()
+signal.plot_show()

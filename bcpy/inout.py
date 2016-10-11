@@ -32,6 +32,7 @@ def extract_ov_header(textvalues, create_faketime=False):
     header = list()
     initheader = textvalues[0][:]
     freq_present = False
+    time_present = False
 
     # If there is a number on the first line of given CSV,
     # it is not the header format we know. We create stuff then.
@@ -55,6 +56,7 @@ def extract_ov_header(textvalues, create_faketime=False):
     for field in initheader:
         if field == "Time (s)":
             correct = "Time"
+            time_present = True
         elif field == "Sampling Rate":
             freq_present = True
             continue
@@ -65,7 +67,10 @@ def extract_ov_header(textvalues, create_faketime=False):
 
         header.append(correct)
 
-    if not freq_present:
+    if time_present is False:
+        header.insert(0, "Faketime")
+
+    if freq_present is False:
         return header, None
 
     # sampling freq is the last value on second row
@@ -86,7 +91,7 @@ def compute_numvalues(textvalues, header, sampling_frequency=None):
     faketime = 0
     create_faketime = False
 
-    if header[0] == "Faketime":
+    if header is not False and header[0] == "Faketime":
         create_faketime = True
         if sampling_frequency is None:
             faketime_step = 1
@@ -113,21 +118,32 @@ def compute_numvalues(textvalues, header, sampling_frequency=None):
 
         if not numrow == []:
             numvalues.append(numrow)
-    if create_faketime:
+    if header is not False and create_faketime:
         header[0] = "Time"
     return header, numvalues
 
 
-def read_ov_file(infile, sampling_frequency=None):
+def read_ov_file(infile, sampling_frequency=None, external_header=False):
     """Set of actions to handle an Openvibe-generated CSV."""
     textvalues = get_csv_content(infile)
-    header, freq = extract_ov_header(textvalues)
-    header, numvalues = compute_numvalues(textvalues, header,
-                                          sampling_frequency)
+    if external_header is False:
+        header, freq = extract_ov_header(textvalues)
+        header, numvalues = compute_numvalues(textvalues, header,
+                                              sampling_frequency)
+    else:
+        header, numvalues = compute_numvalues(textvalues, external_header,
+                                              sampling_frequency)
     if sampling_frequency is not None:
         freq = sampling_frequency
         # override read value if any other is given
     return header, numvalues, freq
+
+
+def get_external_header(infile):
+    """Read header with channel info from another file."""
+    textvalues = get_csv_content(infile)
+    header, __ = extract_ov_header(textvalues)
+    return header
 
 
 def get_channels_from_values(values, header):

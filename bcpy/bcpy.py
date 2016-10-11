@@ -12,11 +12,16 @@ import logging
 
 class BCPy:
     def __init__(self, signal=None, stimulations=None, features=None,
-                 sampling_frequency=None):
+                 header=None, sampling_frequency=None):
         logging.basicConfig(format='%(asctime)s %(message)s',
                             level=logging.DEBUG)
+        external_header = False
+        if header is not None:
+            logging.info("Reading header file %s", header)
+            self.header = inout.get_external_header(header)
+            external_header = self.header
         if signal is not None:
-            self.read_ov_signal(signal, sampling_frequency)
+            self.read_ov_signal(signal, sampling_frequency, external_header)
         if stimulations is not None:
             self.read_ov_stimulations(stimulations)
         if features is not None:
@@ -24,7 +29,8 @@ class BCPy:
 
         self.freqs = dict()
 
-    def read_ov_signal(self, infile, sampling_frequency=None):
+    def read_ov_signal(self, infile, sampling_frequency=None,
+                       external_header=False):
         """Read Openvibe signal file."""
         logging.info("Reading signal file %s", infile)
         if sampling_frequency is not None:
@@ -32,7 +38,7 @@ class BCPy:
                          sampling_frequency)
 
         self.header, self.values, self.sampling_freq = inout.read_ov_file(
-            infile, sampling_frequency)
+            infile, sampling_frequency, external_header)
         self.channels_from_values()
 
     def read_ov_stimulations(self, infile):
