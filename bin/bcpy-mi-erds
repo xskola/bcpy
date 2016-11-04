@@ -1,9 +1,10 @@
 #!/usr/bin/python
 # Compute event-related de/synchronizations (ERD/Ss) around stimulation points
-# Eats signal and stimulation files
+# Command-line arguments are parsed as options
 
 import os
 import sys
+import getopt
 sys.path.append(os.path.abspath('..'))
 import bcpy
 from bcpy.erd import erd
@@ -11,13 +12,27 @@ from bcpy.erd import erd
 duration = 4
 baseline = 2
 offset = 0.5
+freqlow = 8
+freqhigh = 30
+
+usage = '''bcpy-mi-erds: analyze motor imagery event related de/synchronizations
+
+    -s --signal     CSV with signal
+    -t --stimuls    CSV with stimulations
+    -x --lowfreq    Lower bound for frequency filtering in Hz (default=8)
+    -y --highfreq   Higher bound for frequency filtering in Hz (default=30)
+    -b --baseline   Length of baseline in seconds (default=2)
+    -d --duration   Length of the active period in seconds (default=4)
+    -o --offset     Length of the offset period in seconds (default=0.5)
+    -h --help       This fancy message
+'''
 
 
 def print_mi_erds():
     ch0 = "C4"
     ch1 = "C3"
-    eegdata.filter_channel(8, 30, ch0)
-    eegdata.filter_channel(8, 30, ch1)
+    eegdata.filter_channel(freqlow, freqhigh, ch0)
+    eegdata.filter_channel(freqlow, freqhigh, ch1)
     eegdata.compute_erds_using_squared(ch0, 769, offset, duration, baseline)
     eegdata.compute_erds_using_squared(ch1, 770, offset, duration, baseline)
 
@@ -38,14 +53,56 @@ def get_cspd_erd():
     erd3, erd4 = compute()
 
     if erd1 + erd2 < erd3 + erd4:
-        print "conf1"
+        # print "conf1"
         return erd1, erd2
     else:
-        print "conf2"
+        # print "conf2"
         return erd3, erd4
 
-eegdata = bcpy.BCPy(str(sys.argv[1]), str(sys.argv[2]))
-eegdata.filter_channels(8, 30)
+argv = sys.argv[1:]
+
+try:
+    signalfile = str(sys.argv[1])
+    stimulfile = str(sys.argv[2])
+except IndexError:
+    pass
+
+try:
+    opts, args = getopt.getopt(argv, "s:t:x:y:b:d:o:",
+        ["lowfreq=", "highfreq=",
+         "baseline=", "duration=", "offset=",
+         "signal=", "stimuls="])
+except getopt.GetoptError:
+    print usage
+    sys.exit(2)
+for opt, arg in opts:
+    if opt in ("-h", "--help"):
+        print usage
+        sys.exit()
+    elif opt in ("-s", "--signal"):
+        signalfile = arg
+    elif opt in ("-t", "--stimuls"):
+        stimulfile = arg
+    elif opt in ("-x", "--lowfreq"):
+        freqlow = float(arg)
+    elif opt in ("-y", "--highfreq"):
+        freqhigh = float(arg)
+    elif opt in ("-b", "--baseline"):
+        baseline = float(arg)
+    elif opt in ("-d", "--duration"):
+        duration = float(arg)
+    elif opt in ("-o", "--offset"):
+        offset = float(arg)
+
+try:
+    eegdata = bcpy.BCPy(signalfile, stimulfile)
+except (UnboundLocalError, NameError):
+    print """You need to specify at least signal and stimulation files.
+
+""" + usage
+    sys.exit(2)
+
+eegdata.filter_channels(freqlow, freqhigh)
 eegdata.compute_bp()
 erd1, erd2 = get_cspd_erd()
 print "L: " + str("%.2f" % float(erd1)) + "%"
