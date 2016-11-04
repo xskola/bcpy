@@ -1,0 +1,47 @@
+#!/usr/bin/python
+# Compute event-related de/synchronizations (ERD/Ss) around stimulation points
+# Show multiple options for offset and duration of the ERD patterns,
+# baseline remains fixed on 2 seconds.
+#
+# Usage: bcpy-mi-erds-explore signal.csv stimulations.csv
+
+import os
+import sys
+sys.path.append(os.path.abspath('..'))
+import bcpy
+from bcpy.erd import erd
+
+baseline = 2
+
+
+def get_cspd_erd(offset, duration):
+    ch0 = "sFiltered 0"
+    ch1 = "sFiltered 1"
+
+    def compute():
+        erd1 = eegdata.compute_erds_using_squared(ch0, 769, offset,
+                                                  duration, baseline)
+        erd2 = eegdata.compute_erds_using_squared(ch1, 770, offset,
+                                                  duration, baseline)
+        return erd1, erd2
+
+    erd1, erd2 = compute()
+    ch0, ch1 = ch1, ch0
+    erd3, erd4 = compute()
+
+    if erd1 + erd2 < erd3 + erd4:
+        return erd1, erd2
+    else:
+        return erd3, erd4
+
+eegdata = bcpy.BCPy(str(sys.argv[1]), str(sys.argv[2]))
+eegdata.filter_channels(8, 30)
+eegdata.compute_bp()
+
+l = (0.5, 1, 1.5, 2, 2.5, 3, 3.5), (4, 3.5, 3, 2.5, 2, 1.5, 1)
+
+for offset, duration in zip(l[0], l[1]):
+    erd1, erd2 = get_cspd_erd(offset, duration)
+    print ("offset=" + str(offset) + "  duration=" + str(duration)
+           + " - L: " + str("%.2f" % float(erd1)) + "%"
+           + " - R: " + str("%.2f" % float(erd2)) + "%")
