@@ -77,20 +77,3 @@ def compute_erds_using_fft(channels, sampling_freq, stimul_times,
         erds.append(avgerd)
 
     print_erd_stats(channel, wanted_stimul_code, erds, lowfreq, highfreq)
-
-
-def print_erd_stats(channel, wanted_stimul_code, erds,
-                    lowfreq=None, highfreq=None):
-    """Guess this will be decomissioned soon. Print table with ERD/S stats."""
-    return str(sum(erds)/len(erds))
-    # Don't print the fancy table. I guess it is pointless.
-    title = "ERD/ERS stats for channel " + channel + " and event '"\
-            + stimul.names[wanted_stimul_code] + "'"
-    print title
-    print "-" * len(title)
-    if lowfreq is not None:
-        print "Frequency range from " + str(lowfreq) + " Hz to "\
-              + str(highfreq) + " Hz"
-    print "Avg: " + str(sum(erds)/len(erds))
-    print "Max: " + str(max(erds))
-    print "Min: " + str(min(erds))
