@@ -1,4 +1,4 @@
-import numpy as np
+from scipy import fft, arange
 import funcs
 
 
@@ -17,11 +17,20 @@ def compute_squared_bp(channels):
 
 def compute_fft(data, sampling_freq):
     """Compute real part of FFT and return only the side > 0."""
-    y = np.fft.fft(data)
-    freq = np.fft.fftfreq(len(data), 1.0/sampling_freq)
-    a = next(x[0] for x in enumerate(freq) if x[1] > 0)
-    b = next(x[0] for x in enumerate(freq) if x[1] < 0)
-    return freq[a:b].tolist(), np.abs(y)[a:b].tolist()
+    n = len(data)
+    y = fft(data)/n
+    k = arange(n)
+    T = n/sampling_freq
+    freq = k/T # two sides frequency range
+    freq = freq[range(n/2)] # one side frequency range
+    return freq, abs(y)
+
+    # Below is the numpy version
+    # y = np.fft.fft(data)
+    # freq = np.fft.fftfreq(len(data), 1.0/sampling_freq)
+    # a = next(x[0] for x in enumerate(freq) if x[1] > 0)
+    # b = next(x[0] for x in enumerate(freq) if x[1] < 0)
+    # return freq[a:b].tolist(), np.abs(y)[a:b].tolist()
 
 
 def get_epoch_bp(channels, sampling_freq, channel,
