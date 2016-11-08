@@ -18,23 +18,38 @@ def compute_erds_using_squared(channels, stimul_times, channel,
 
     ERD is computed from active state of "duration" seconds, "offset" seconds
     after stimuli in "stimul_times" and rest state of "baseline_duration"
-    before the stimuli, this all for one "channel"."""
+    before the stimuli, this all for one "channel".
+
+    Non-squared channels are used as squaring is used with a help of mean.
+    """
 
     erds = list()
+    baselines = list()
+    actives = list()
+
     for timestamp in stimul_times[wanted_stimul_code]:
         active_epoch = funcs.get_epoch(channels, timestamp+offset,
-                                       timestamp+offset+duration)
+                                       timestamp+offset+duration)[channel]
+        active_epoch_mean = sum(active_epoch)/len(active_epoch)
+        active_epoch = [(x-active_epoch_mean)**2 for x in active_epoch]
+        active = sum(active_epoch)/len(active_epoch)
+        actives.append(active)
+
         baseline_epoch = funcs.get_epoch(channels,
                                          timestamp-baseline_duration,
-                                         timestamp)
+                                         timestamp)[channel]
+        baselines += baseline_epoch
 
-        active = funcs.get_channels_avgs(active_epoch)[channel]
-        baseline = funcs.get_channels_avgs(baseline_epoch)[channel]
+    baselines_mean = sum(baselines)/len(baselines)
+    baseline_bp = [(x-baselines_mean)**2 for x in baselines]
+    avg_baseline = sum(baseline_bp)/len(baselines)
+    # baseline BP is processed for all stimulation points together
 
-        this_erd = erd(active, baseline)
+    for active in actives:
+        this_erd = erd(active, avg_baseline)
         erds.append(this_erd)
 
-    return print_erd_stats(channel, wanted_stimul_code, erds)
+    return sum(erds)/len(erds)
 
 
 def compute_erds_using_fft(channels, sampling_freq, stimul_times,

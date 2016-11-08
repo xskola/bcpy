@@ -168,7 +168,7 @@ class BCPy:
         """Compute event-related (de)synchronization per stimulation point."""
         if not hasattr(self, 'squared_channels'):
             self.compute_bp()
-        return erd.compute_erds_using_squared(self.squared_channels,
+        return erd.compute_erds_using_squared(self.channels,
                                               self.stimul_times,
                                               channel, stimul_code,
                                               offset, duration,
