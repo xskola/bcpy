@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # Compute event-related de/synchronizations (ERD/Ss) around stimulation points
 # Show multiple options for offset and duration of the ERD patterns,
-# baseline remains fixed on 2 seconds.
+# printing a table with duration and offset on each side.
 #
 # Usage: bcpy-mi-erds-explore signal.csv stimulations.csv
 
@@ -29,23 +29,41 @@ def get_cspd_erd(offset, duration):
     ch0, ch1 = ch1, ch0
     erd3, erd4 = compute()
 
-    #if erd1 + erd2 < erd3 + erd4:
-    #    return erd1, erd2
-    #else:
-    #    return erd3, erd4
+    # if erd1 + erd2 < erd3 + erd4:
+    #     return erd1, erd2
+    # else:
+    #     return erd3, erd4
     return erd1, erd2, erd3, erd4
 
 eegdata = bcpy.BCPy(str(sys.argv[1]), str(sys.argv[2]))
 eegdata.filter_channels(8, 30)
 eegdata.compute_bp()
 
-l = (0.5, 1, 1.5, 2, 2.5, 3, 3.5), (4, 3.5, 3, 2.5, 2, 1.5, 1)
+o = (0.5, 1, 1.5, 2)
+d = (4, 3.5, 3, 2.5)
 
-for offset, duration in zip(l[0], l[1]):
-    erd1, erd2, erd3, erd4 = get_cspd_erd(offset, duration)
-    if (erd1 + erd2) > (erd3 + erd4):
-        erd1, erd2, erd3, erd4 = erd3, erd4, erd1, erd2
-    print "offset=" + str(offset) + ", duration=" + str(duration)
-    print "ERD: L=" + str("%.2f" % float(erd1)) + "%\tR=" + str("%.2f" % float(erd2)) + "%"
-    print "ERS: R=" + str("%.2f" % float(erd4)) + "%\tL=" + str("%.2f" % float(erd3)) + "%"
+sys.stdout.write("Duration: ")
+for duration in d:
+    sys.stdout.write(str(duration) + " seconds\t\t\t")
+print
+for offset in o:
+    l1 = list()
+    l2 = list()
+    l1.append(str("%3.1f" % offset) + ": ")
+    l2.append(str("%3.1f" % offset) + ": ")
+    for duration in d:
+        erd1, erd2, erd3, erd4 = get_cspd_erd(offset, duration)
+        if (erd1 + erd2) > (erd3 + erd4):
+            erd1, erd2, erd3, erd4 = erd3, erd4, erd1, erd2
+        l1.append("ERD: L=" + str("%6.2f" % float(erd1)) + "%, R="
+                  + str("%6.2f" % float(erd2)) + "%\t")
+        l2.append("ERS: R=" + str("%6.2f" % float(erd4)) + "%, L="
+                  + str("%6.2f" % float(erd3)) + "%\t")
+    for x in l1:
+        sys.stdout.write(x)
     print
+    for x in l2:
+        sys.stdout.write(x)
+    print
+    print
+print "^ Offset (seconds)"
