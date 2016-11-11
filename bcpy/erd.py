@@ -13,43 +13,73 @@ def erd(active, rest):
 
 def compute_erds_using_squared(channels, stimul_times, channel,
                                wanted_stimul_code,
-                               offset, duration, baseline_duration):
+                               offset, duration, baseline_duration,
+                               sampling_frequency):
     """Compute relative ERD/ERS for all stimulation points.
 
     ERD is computed from active state of "duration" seconds, "offset" seconds
-    after stimuli in "stimul_times" and rest state of "baseline_duration"
-    before the stimuli, this all for one "channel".
+    after stimuli and rest state of "baseline_duration" before the stimuli,
+    this all for one "channel" in "stimul_times" dict.
 
-    Non-squared channels are used as squaring is used with a help of mean.
+    Non-squared channels are used as normalization takes places before ERD
+    computation (B. Graimann et al: Visualization of significant ERD/ERS
+    patterns in multichannel EEG and ECoG data).
     """
 
-    erds = list()
-    baselines = list()
-    actives = list()
+    all_trials = list()
+
+    def avg(x):
+        return sum(x)/len(x)
 
     for timestamp in stimul_times[wanted_stimul_code]:
-        active_epoch = funcs.get_epoch(channels, timestamp+offset,
-                                       timestamp+offset+duration)[channel]
-        active_epoch_mean = sum(active_epoch)/len(active_epoch)
-        active_epoch = [(x-active_epoch_mean)**2 for x in active_epoch]
-        active = sum(active_epoch)/len(active_epoch)
-        actives.append(active)
+        epoch = funcs.get_epoch(channels, timestamp-baseline_duration,
+                                timestamp+offset+duration)[channel]
+        all_trials.append(epoch)
 
-        baseline_epoch = funcs.get_epoch(channels,
-                                         timestamp-baseline_duration,
-                                         timestamp)[channel]
-        baselines += baseline_epoch
+    average_epoch = [avg(x) for x in [list(col) for col in zip(*all_trials)]]
 
-    baselines_mean = sum(baselines)/len(baselines)
-    baseline_bp = [(x-baselines_mean)**2 for x in baselines]
-    avg_baseline = sum(baseline_bp)/len(baselines)
-    # baseline BP is processed for all stimulation points together
+    weighted_trial = list()
+    weighted_all_trials = list()
+    for trial in all_trials:
+        weighted_trial = list()
+        for j, sample in enumerate(trial):
+            try:
+                w_sample = (sample-average_epoch[j])**2
+            except IndexError:
+                pass
+                # silently skip ends of epochs where frames might be missing
+            weighted_trial.append(w_sample)
+            # (sample - mean of j-th sample averaged over all trials)^2
+        weighted_all_trials.append(weighted_trial)
 
-    for active in actives:
-        this_erd = erd(active, avg_baseline)
-        erds.append(this_erd)
+    average_w_trial = [avg(x) for x in [list(col)
+                                        for col in zip(*weighted_all_trials)]]
+    # contains samples in average of all weighted trials
 
-    return sum(erds)/len(erds)
+    baseline_avg_trial = list()
+    last_baseline_sample = int(baseline_duration*sampling_frequency)
+    for sample in average_w_trial[:last_baseline_sample]:
+        baseline_avg_trial.append(sample)
+    baseline_average = avg(baseline_avg_trial)
+    # contains only one number
+
+    first_active_sample = int(baseline_duration*sampling_frequency
+                              + offset*sampling_frequency)
+    average_erd = [erd(x, baseline_average) for x in
+                   average_w_trial[first_active_sample:]]
+    result_erd = avg(average_erd)
+    # computed for each sample of active period with reference
+    # to average from all baselines, then squeezed to one value
+
+    # the ERD course plot is best seen from weigthed BP of a trial
+    # but better to undersample it
+    sample_batch_size = int(sampling_frequency/4)
+    smoothed = list()
+    for p in range(0, len(average_w_trial), sample_batch_size):
+        epoch = average_w_trial[p:p+sample_batch_size]
+        smoothed.append(avg(epoch))
+
+    return result_erd, smoothed
 
 
 def compute_erds_using_fft(channels, sampling_freq, stimul_times,

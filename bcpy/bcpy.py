@@ -172,7 +172,8 @@ class BCPy:
                                               self.stimul_times,
                                               channel, stimul_code,
                                               offset, duration,
-                                              baseline_duration)
+                                              baseline_duration,
+                                              self.sampling_freq)
 
     def compute_erds_using_fft(self, channel, lowfreq, highfreq,
                                stimul_code,
