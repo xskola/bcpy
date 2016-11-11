@@ -19,10 +19,12 @@ def get_cspd_erd(offset, duration):
     ch1 = "sFiltered 1"
 
     def compute():
-        erd1 = float(eegdata.compute_erds_using_squared(ch0, 769, offset,
-                                                        duration, baseline))
-        erd2 = float(eegdata.compute_erds_using_squared(ch1, 770, offset,
-                                                        duration, baseline))
+        erd1, _ = eegdata.compute_erds_using_squared(ch0, 769, offset,
+                                                     duration, baseline)
+        erd2, _ = eegdata.compute_erds_using_squared(ch1, 770, offset,
+                                                     duration, baseline)
+        erd1 = float(erd1)
+        erd2 = float(erd2)
         return erd1, erd2
 
     erd1, erd2 = compute()

@@ -1,6 +1,13 @@
 #!/usr/bin/python
 # Compute event-related de/synchronizations (ERD/Ss) around stimulation points
+# and show the plots of their courses.
 # Command-line arguments are parsed as options
+#
+# The current implementation takes Openvibe CSP filtered channels and displays
+# ERDs for both possibilities (two channels versus two hands) resulting in
+# four ERD combinations in two batches. The channels are named 'sFiltered 0'
+# and 'sFiltered 1'. However all this should be easily adjustable for other
+# settings (e.g. C3 and C4 sensors).
 
 import os
 import sys
@@ -8,6 +15,7 @@ import getopt
 sys.path.append(os.path.abspath('..'))
 import bcpy
 from bcpy.erd import erd
+from bcpy.funcs import plot_data
 
 duration = 4
 baseline = 2
@@ -28,37 +36,24 @@ usage = '''bcpy-mi-erds: analyze motor imagery event related de/synchronizations
 '''
 
 
-def print_mi_erds():
-    ch0 = "C4"
-    ch1 = "C3"
-    eegdata.filter_channel(freqlow, freqhigh, ch0)
-    eegdata.filter_channel(freqlow, freqhigh, ch1)
-    eegdata.compute_erds_using_squared(ch0, 769, offset, duration, baseline)
-    eegdata.compute_erds_using_squared(ch1, 770, offset, duration, baseline)
-
-
 def get_cspd_erd():
     ch0 = "sFiltered 0"
     ch1 = "sFiltered 1"
 
     def compute():
-        erd1 = float(eegdata.compute_erds_using_squared(ch0, 769, offset,
-                                                       duration, baseline))
-        erd2 = float(eegdata.compute_erds_using_squared(ch1, 770, offset,
-                                                        duration, baseline))
-        return erd1, erd2
+        erd1, plot1 = eegdata.compute_erds_using_squared(ch0, 769, offset,
+                                                         duration, baseline)
+        erd1 = float(erd1)
+        erd2, plot2 = eegdata.compute_erds_using_squared(ch1, 770, offset,
+                                                         duration, baseline)
+        erd2 = float(erd2)
+        return erd1, erd2, plot1, plot2
 
-    erd1, erd2 = compute()
+    erd1, erd2, plot1, plot2 = compute()
     ch0, ch1 = ch1, ch0
-    erd3, erd4 = compute()
+    erd3, erd4, plot3, plot4 = compute()
 
-    #if (erd1 + erd2) < (erd3 + erd4):
-    #    print "conf1"
-    #    print erd1, erd2
-    #else:
-    #    print "conf2"
-    #    print erd3, erd4
-    return erd1, erd2, erd3, erd4
+    return erd1, erd2, erd3, erd4, plot1, plot2, plot3, plot4
 
 argv = sys.argv[1:]
 
@@ -69,7 +64,8 @@ except IndexError:
     pass
 
 try:
-    opts, args = getopt.getopt(argv, "s:t:x:y:b:d:o:",
+    opts, args = getopt.getopt(
+        argv, "s:t:x:y:b:d:o:",
         ["lowfreq=", "highfreq=",
          "baseline=", "duration=", "offset=",
          "signal=", "stimuls="])
@@ -105,8 +101,18 @@ except (UnboundLocalError, NameError):
 
 eegdata.filter_channels(freqlow, freqhigh)
 eegdata.compute_bp()
-erd1, erd2, erd3, erd4 = get_cspd_erd()
+erd1, erd2, erd3, erd4, plot1, plot2, plot3, plot4 = get_cspd_erd()
 if (erd1 + erd2) > (erd3 + erd4):
     erd1, erd2, erd3, erd4 = erd3, erd4, erd1, erd2
-print "ERD: L=" + str("%.2f" % float(erd1)) + "%\tR=" + str("%.2f" % float(erd2)) + "%"
-print "ERS: R=" + str("%.2f" % float(erd4)) + "%\tL=" + str("%.2f" % float(erd3)) + "%"
+    plot1, plot2, plot3, plot4 = plot3, plot4, plot1, plot2
+print ("ERD: L=" + str("%.2f" % float(erd1)) +
+       "%\tR=" + str("%.2f" % float(erd2)) + "%")
+plot_data(plot1, label="ERD1 (left)")
+plot_data(plot2, label="ERD1 (right)")
+eegdata.plot_show()
+
+print ("ERS: L=" + str("%.2f" % float(erd3)) +
+       "%\tR=" + str("%.2f" % float(erd4)) + "%")
+plot_data(plot3, label="ERD2 (left)")
+plot_data(plot4, label="ERD2 (right)")
+eegdata.plot_show()
