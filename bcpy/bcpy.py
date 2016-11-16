@@ -12,7 +12,7 @@ import logging
 
 class BCPy:
     def __init__(self, signal=None, stimulations=None, features=None,
-                 header=None, sampling_frequency=None):
+                 header=None, sampling_frequency=None, csp_config=None):
         logging.basicConfig(format='%(asctime)s %(message)s',
                             level=logging.DEBUG)
         external_header = False
@@ -26,6 +26,8 @@ class BCPy:
             self.read_ov_stimulations(stimulations)
         if features is not None:
             self.read_ov_features(features)
+        if csp_config is not None:
+            self.read_ov_csp_config(csp_config)
 
         self.freqs = dict()
 
@@ -59,6 +61,29 @@ class BCPy:
             = inout.read_ov_file(infile)
         self.feature_channels = inout.get_channels_from_values(
             self.feature_values, self.feature_header)
+
+    def read_ov_csp_config(self, infile):
+        """Read Openvibe Common Spatial Patterns filter configuration."""
+        logging.info("Reading CSP configuration file %s", infile)
+        self.csp_config = list()
+        coefficients = inout.get_csp_config(infile)
+        try:
+            num_channels = len(self.header)-1
+            if len(coefficients) % num_channels != 0:
+                logging.error("Number of channels does not match number "
+                              "of CSP coefficients. Cannot pair.")
+                return
+        except AttributeError:
+            logging.error("Error: Channels are not defined.")
+            return
+
+        num_filters = len(coefficients) / num_channels
+        for csp in range(num_filters):
+            this_csp_config = dict()
+            offset = (csp-1)*num_channels
+            for i, channel in enumerate(self.header[1:]):
+                this_csp_config[channel] = float(coefficients[i+offset])
+            self.csp_config.append(this_csp_config)
 
     def write_csv(self, outfile):
         """Output CSV with signal values."""

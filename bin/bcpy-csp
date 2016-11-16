@@ -1,0 +1,20 @@
+#!/usr/bin/python
+# Display CSP config.
+# First parameter specifies signal or header file, second parameter CSP config
+# file, or defaults to csp-spatial-filter.cfg.
+
+import os
+import sys
+sys.path.append(os.path.abspath('..'))
+import bcpy
+
+try:
+    csp_config_file = sys.argv[2]
+except IndexError:
+    csp_config_file = "csp-spatial-filter.cfg"
+
+signal = bcpy.BCPy(header=str(sys.argv[1]), csp_config=csp_config_file)
+# replace signal= for header= and load header file instead of whole signal
+
+for csp in signal.csp_config:
+    print csp

@@ -1,6 +1,7 @@
 import csv
 import sys
 import logging
+import re
 
 
 def get_csv_content(infile):
@@ -25,6 +26,16 @@ def get_csv_content(infile):
             sys.exit(1)
         textvalues = list(reader)
     return textvalues
+
+
+def get_csp_config(infile):
+    """Get CSP coefficient from Openvibe CSP config file."""
+    pattern = '<SettingValue>(.+?)</SettingValue>'
+    with open(infile, 'r') as f:
+        content = f.read()
+    coefficients = re.search(pattern, content).group(1).split(" ")
+    coefficients = [x for x in coefficients if len(x) > 1]
+    return coefficients
 
 
 def extract_ov_header(textvalues, create_faketime=False):

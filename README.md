@@ -76,6 +76,12 @@ compute_erds_using_squared(self, channel, stimul_code, offset=0.5, duration=4, b
 Compute event-related (de)synchronization per stimulation point.
 ```
 
+## CSP
+```
+read_ov_csp_config(self, infile): Read Openvibe Common Spatial Patterns filter configuration.
+```
+CSP configurations are paired with channels in `BCPy.header` to dictionaries. The dictionaries are saved to list of spatial filters `BCPy.csp_config`. An example that prints CSP configuration can be found in `bin/bcpy-csp`.
+
 ## Plotting
 
 ```
