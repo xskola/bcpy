@@ -107,6 +107,11 @@ class BCPy:
         self.values = inout.get_values_from_channels(
             self.channels, self.header)
 
+    def squeeze_channels(self):
+        """Replace channels an average channel from all available ones."""
+        self.channels, self.header = funcs.squeeze_channels(self.channels,
+                                                            self.header)
+
     def compute_bp(self):
         """Compute average bandpower per data point by squaring."""
         self.squared_channels = bp.compute_squared_bp(self.channels)

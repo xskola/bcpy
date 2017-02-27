@@ -1,5 +1,6 @@
 from scipy.signal import butter, lfilter
 import matplotlib.pyplot as plt
+import inout
 
 
 def get_epoch(struct, low, high):
@@ -75,6 +76,20 @@ def get_avg_values_lists(data):
         output.append(sum(l)/len(l))
     return output
 
+
+def squeeze_channels(channels, header):
+    """Create an average channel from all available ones."""
+    values = inout.get_values_from_channels(channels, header)
+    result = list()
+    for line in values:
+        row = [line[0]]
+        average = sum(line[1:])/len(line[1:])
+        row.append(average)
+        result.append(row)
+
+    new_header = ["Time", "Avg"]
+    avg_channels = inout.get_channels_from_values(result, new_header)
+    return avg_channels, new_header
 
 def butter_bandpass_filter(data, lowcut, highcut, fs, order=4):
     """Perform band pass filtering using butterworth filter."""

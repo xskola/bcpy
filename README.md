@@ -98,7 +98,10 @@ Either matplotlib show function or `BCPy.plot_show()` must be called in order to
 
 ## Editing
 
-```def cutout_epoch(self, low, high): Remove chunk of signal data from class' channels variable.```
+```
+def cutout_epoch(self, low, high): Remove chunk of signal data from class' channels variable.
+def squeeze_channels(self): Replace the channel set with one average channel from all available ones.
+```
 
 ## Writing files
 
