@@ -86,62 +86,6 @@ def compute_avg_prestimul_bps_fft(channels, header, stimul_times,
     return sum(bps)/len(bps)
 
 
-def compute_bp_around_stimuli(channels, sampling_freq, stimul_times,
-                              channel, wanted_stimul_code,
-                              lowfreq, highfreq,
-                              offset, duration, baseline_duration):
-    """Get bandpower (FFT) of signal chunk pre-/post-stimulus.
-
-    Compute values for all the chunks, then average.
-    """
-    # eats small chunks
-    active_bps = list()
-    baseline_bps = list()
-    for timestamp in stimul_times[wanted_stimul_code]:
-        # use epoching function to get slice of channels dict
-        __, active = bp.get_epoch_bp(channels, sampling_freq, channel,
-                                     lowfreq, highfreq,
-                                     timestamp+offset,
-                                     timestamp+offset+duration)
-        __, baseline = bp.get_epoch_bp(channels, sampling_freq, channel,
-                                       lowfreq, highfreq,
-                                       timestamp-baseline_duration, timestamp)
-        # compute average for the whole frequency range
-        active_avg = sum(active)/len(active)
-        baseline_avg = sum(baseline)/len(baseline)
-        active_bps.append(active_avg)
-        baseline_bps.append(baseline_avg)
-
-    print sum(active_bps)/len(active_bps)
-    print sum(baseline_bps)/len(baseline_bps)
-
-
-def compute_bp_around_stimuli2(channels, sampling_freq, stimul_times,
-                               channel, wanted_stimul_code,
-                               lowfreq, highfreq,
-                               offset, duration, baseline_duration):
-    """Not Working Well: Get BP (FFT) of signal chunk pre-/post-stimulus.
-
-    Suffers from the unequal BP from unequal signal chunk lenghts issue.
-    """
-    active_signal = dict((x, []) for x in channels.keys())
-    baseline_signal = dict((x, []) for x in channels.keys())
-    for timestamp in stimul_times[wanted_stimul_code]:
-        active = funcs.get_epoch(channels, timestamp+offset,
-                                 timestamp+offset+duration)
-        baseline = funcs.get_epoch(channels, timestamp-baseline_duration,
-                                   timestamp)
-        for k in active_signal.keys():
-            active_signal[k] += active[k]
-        for k in baseline_signal.keys():
-            baseline_signal[k] += baseline[k]
-
-    __, active_bp = bp.compute_fft(active_signal[channel], sampling_freq)
-    __, baseline_bp = bp.compute_fft(baseline_signal[channel], sampling_freq)
-    print sum(active_bp)/len(active_bp)
-    print sum(baseline_bp)/len(baseline_bp)
-
-
 def pick_stimul_color(code):
     """Generate recyclable colors for vertical lines for stimuli codes."""
     if code == codes["left"]:
