@@ -73,8 +73,12 @@ def compute_ffts(self): Call compute_fft() for all channels.
 
 ```
 compute_erds_using_squared(self, channel, stimul_code, offset=0.5, duration=4, baseline_duration=2):
+```
 Compute event-related (de)synchronization per stimulation point.
 ```
+compute_avg_stimul_ffts(self, channel, stim_codes, duration, lowfreq, highfreq, offset=0):
+```
+Compute average frequency spectra (FFT) for `duration` seconds before and after all listed `stim_codes`. Difference between these spectra shows strong/weak frequency components of ERD. Example shown in `bin/bcpy-stimuli-fft-diff`.
 
 ## CSP
 ```

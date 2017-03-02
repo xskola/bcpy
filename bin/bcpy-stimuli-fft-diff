@@ -1,0 +1,39 @@
+#!/usr/bin/python
+# Compute average frequency spectra for <duration> seconds
+# pre- and post-stimuli for selected channel and stimulation
+# code combination. Plot results together with difference
+# between the spectra.
+#
+# Input: signal file, stimulation file
+
+import os
+import sys
+sys.path.append(os.path.abspath('..'))
+import bcpy
+import bcpy.funcs
+from bcpy.stimul import codes
+
+signal = bcpy.BCPy(str(sys.argv[1]), str(sys.argv[2]))
+signal.filter_channels(5, 40)
+
+for channel in ["C4", "C3"]:
+    if channel == "sFiltered 0":
+        code = codes['left']
+    else:
+        code = codes['right']
+    freq, active, baseline = signal.compute_avg_stimul_ffts(
+        channel, [code], duration=2, lowfreq=8, highfreq=30
+    )
+
+    diff = list()
+    for index, value in enumerate(active):
+        diff.append(baseline[index] - value)
+
+    bcpy.funcs.plot_data(active, freq, "active freq for " + str(code)
+                         + " at " + channel)
+    bcpy.funcs.plot_data(baseline, freq, "baseline freqs " + str(code)
+                         + " at " + channel)
+    bcpy.funcs.plot_data(diff, freq, "spectrum diff for " + str(code)
+                         + " at " + channel)
+
+    signal.plot_show()

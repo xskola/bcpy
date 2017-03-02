@@ -63,12 +63,13 @@ def compute_avg_stimul_bps(channels, header, stimul_times,
     return funcs.get_channels_avgs(epochs)
 
 
-def compute_avg_prestimul_bps_fft(channels, header, stimul_times,
-                                  stim_codes, baseline_duration):
-    """Compute average band powers before all stimuli."""
-    # a sketch for TODO using FFT BP
-    # ...
+def compute_avg_stimul_ffts(channels, channel, header, stimul_times,
+                            stim_codes, duration, offset,
+                            lowfreq, highfreq, sampling_freq):
+    """Compute avg FFT for epoch of equal lenghts pre/post stimuli."""
     epochs = dict((x, []) for x in channels.keys())
+    active_bps = list()
+    rest_bps = list()
     bps = list()
 
     for stimul_code in stimul_times:
@@ -78,12 +79,21 @@ def compute_avg_prestimul_bps_fft(channels, header, stimul_times,
             continue
 
         for timestamp in stimul_times[stimul_code]:
-            x, power = bp.get_epoch_bp(channels, 500, "C4", 8, 12,
-                                       timestamp-baseline_duration, timestamp)
-            funcs.plot_data(x, power)
-            bps.append(sum(power)/len(power))
+            active_fq, active_y = bp.get_epoch_bp(channels, sampling_freq,
+                                                  channel, lowfreq, highfreq,
+                                                  timestamp+offset,
+                                                  timestamp+offset+duration)
+            rest_fq, rest_y = bp.get_epoch_bp(channels, sampling_freq,
+                                              channel, lowfreq, highfreq,
+                                              timestamp-duration, timestamp)
 
-    return sum(bps)/len(bps)
+            active_bps.append(active_y)
+            rest_bps.append(rest_y)
+
+    avg_active_bp = [float(sum(col))/len(col) for col in zip(*active_bps)]
+    avg_rest_bp = [float(sum(col))/len(col) for col in zip(*rest_bps)]
+
+    return active_fq, avg_active_bp, avg_rest_bp
 
 
 def pick_stimul_color(code):

@@ -192,6 +192,20 @@ class BCPy:
                                              self.stimul_times,
                                              stim_codes, duration, offset)
 
+    def compute_avg_stimul_ffts(self, channel, stim_codes, duration,
+                                lowfreq, highfreq, offset=0):
+        """Compute avg FFT for epoch of equal lenghts pre/post stimuli.
+
+        Returns list of frequencies, active FFT, and baseline FFT spectra."""
+        if stim_codes is None:
+            stim_codes = list(stimul.names)
+
+        return stimul.compute_avg_stimul_ffts(self.channels, channel,
+                                              self.header, self.stimul_times,
+                                              stim_codes, duration, offset,
+                                              lowfreq, highfreq,
+                                              self.sampling_freq)
+
     def compute_erds_using_squared(self, channel, stimul_code,
                                    offset=0.5, duration=4,
                                    baseline_duration=2):

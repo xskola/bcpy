@@ -91,6 +91,7 @@ def squeeze_channels(channels, header):
     avg_channels = inout.get_channels_from_values(result, new_header)
     return avg_channels, new_header
 
+
 def butter_bandpass_filter(data, lowcut, highcut, fs, order=4):
     """Perform band pass filtering using butterworth filter."""
     def butter_bandpass(lowcut, highcut, fs, order=5):
