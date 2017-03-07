@@ -107,6 +107,12 @@ class BCPy:
         self.values = inout.get_values_from_channels(
             self.channels, self.header)
 
+    def delete_channels(self, which):
+        """Delete listed channels from channels structure."""
+        for channel in which:
+            self.header.remove(channel)
+            del self.channels[channel]
+
     def squeeze_channels(self):
         """Replace channels an average channel from all available ones."""
         self.channels, self.header = funcs.squeeze_channels(self.channels,
