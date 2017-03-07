@@ -20,7 +20,7 @@ def compute_fft(data, sampling_freq):
     n = len(data)
     y = fft(data)/n
     k = arange(n)
-    T = n/sampling_freq
+    T = float(n/sampling_freq)
     freq = k/T # two sides frequency range
     freq = freq[range(n/2)] # one side frequency range
     return freq, abs(y)
