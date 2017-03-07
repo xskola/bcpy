@@ -66,8 +66,8 @@ def get_epoched_bandpowers(channels, width=1):
 
 
 def get_epoched_bandpowers_orig(channels, width=1):
+    import numpy as np
     # this one is correct
-    channels = dict(Time=channels["Time"], C3=channels["C3"])
     result = dict((channel, []) for channel in channels)
     for second in np.arange(0, channels["Time"][-1], width):
         epoch = funcs.get_epoch(channels, second, second+width)
