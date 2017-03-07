@@ -239,7 +239,8 @@ class BCPy:
     def compute_fft(self, channel):
         """Compute Fourier transform per channel."""
         freq, y = bp.compute_fft(self.channels[channel], self.sampling_freq)
-        self.freqs[channel] = [list(freq), list(y)]  # ->tuple?
+        self.freqs[channel] = list(y)
+        self.freqs["Freq"] = list(freq)
 
     def compute_ffts(self):
         """Call compute_fft() for all channels."""
@@ -336,14 +337,14 @@ class BCPy:
     def plot_fft(self, channel, low=0.0, high=float("inf")):
         """Plot output from compute_fft held in freq class var."""
         if low == 0.0 and high == float("inf"):
-            funcs.plot_data(self.freqs[channel][1], self.freqs[channel][0],
+            funcs.plot_data(self.freqs[channel], self.freqs["Freq"][0],
                             channel + " spectrum")
         else:
-            a, b = bp.slice_freqs(self.freqs[channel][0], low, high)
+            a, b = bp.slice_freqs(self.freqs["Freq"], low, high)
             caption = channel + " spectrum [" + str(low)\
                 + ", " + str(high) + "] Hz"
-            funcs.plot_data(self.freqs[channel][1][a:b],
-                            self.freqs[channel][0][a:b], label=caption)
+            funcs.plot_data(self.freqs[channel][a:b],
+                            self.freqs["Freq"][a:b], label=caption)
 
     def plot(self, channels, discrete=False):
         """Plot non-internal structure. Useful for epoched_bandpowers."""
