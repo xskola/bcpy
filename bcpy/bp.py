@@ -69,7 +69,9 @@ def get_epoched_bandpowers_orig(channels, width=1):
     import numpy as np
     # this one is correct
     result = dict((channel, []) for channel in channels)
-    for second in np.arange(0, channels["Time"][-1], width):
+    for second in np.arange(channels["Time"][0],
+                            channels["Time"][-1],
+                            width):
         epoch = funcs.get_epoch(channels, second, second+width)
         epoch_avg = funcs.get_channels_avgs(epoch)
         for channel in epoch_avg:
