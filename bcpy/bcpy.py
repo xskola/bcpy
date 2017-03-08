@@ -247,6 +247,9 @@ class BCPy:
         freq, y = bp.compute_fft(self.channels[channel], self.sampling_freq)
         self.freqs[channel] = list(y)
         self.freqs["Freq"] = list(freq)
+        self.freqs["Time"] = self.freqs["Freq"]
+        # last one gives us certain level of compatibility
+        # with channel struct-dependent functions
 
     def compute_ffts(self):
         """Call compute_fft() for all channels."""
