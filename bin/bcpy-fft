@@ -1,0 +1,36 @@
+#!/usr/bin/python
+# Plot frequency domain of all channels in a given file
+# with width of 'width' Hz.
+
+import os
+import sys
+sys.path.append(os.path.abspath('..'))
+import bcpy
+import bcpy.bp
+import numpy as np
+import matplotlib.pyplot as plt
+
+low = 1  # Hz
+high = 45  # Hz
+width = 0.5  # Hz
+
+signal = bcpy.BCPy(str(sys.argv[1]))
+signal.filter_channels(1, 45)
+signal.compute_ffts()
+a, b = bcpy.bp.slice_freqs(signal.freqs["Freq"], low, high)
+#  Get indices of freqs we are interested in
+signal.freqs["Time"] = signal.freqs["Freq"][a:b]
+#  Apply these freqs on the structure where freqs are stored (signal.freqs)
+#  The thing with "Time" list is that bcpy.bp.get_epoched_bandpowers_orig
+#  uses "Time" as its indexing structure.
+
+for channel in signal.freqs:
+    if channel is "Time" or channel is "Freq":
+        continue
+    signal.freqs[channel] = signal.freqs[channel][a:b]
+    #  Limit each channel to the range of frequencies of interest
+
+data = bcpy.bp.get_epoched_bandpowers_orig(signal.freqs, width)
+#  This function creates "frequency epochs" from signal.freqs dict
+signal.plot(data)
+signal.plot_show()
