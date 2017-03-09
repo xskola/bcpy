@@ -21,8 +21,8 @@ def compute_fft(data, sampling_freq):
     y = fft(data)/n
     k = arange(n)
     T = float(n/sampling_freq)
-    freq = k/T # two sides frequency range
-    freq = freq[range(n/2)] # one side frequency range
+    freq = k/T  # two sides frequency range
+    freq = freq[range(n/2)]  # one side frequency range
     return freq, abs(y)
 
     # Below is the numpy version
@@ -68,9 +68,17 @@ def get_epoched_bandpowers(channels, width=1):
 def get_epoched_bandpowers_orig(channels, width=1):
     import numpy as np
     # this one is correct
+    if "Time" in channels:
+        index = "Time"
+    elif "Freq" in channels:
+        index = "Freq"
+    else:
+        logging.warn("get_epoched_bandpowers_orig: no index, can't do it.")
+        return
+
     result = dict((channel, []) for channel in channels)
-    for second in np.arange(channels["Time"][0],
-                            channels["Time"][-1],
+    for second in np.arange(channels[index][0],
+                            channels[index][-1],
                             width):
         epoch = funcs.get_epoch(channels, second, second+width)
         epoch_avg = funcs.get_channels_avgs(epoch)

@@ -247,14 +247,23 @@ class BCPy:
         freq, y = bp.compute_fft(self.channels[channel], self.sampling_freq)
         self.freqs[channel] = list(y)
         self.freqs["Freq"] = list(freq)
-        self.freqs["Time"] = self.freqs["Freq"]
-        # last one gives us certain level of compatibility
-        # with channel struct-dependent functions
 
     def compute_ffts(self):
         """Call compute_fft() for all channels."""
         for channel in self.channels:
+            if channel == "Time":
+                continue
             self.compute_fft(channel)
+
+    def smooth_fft(self, width):
+        """Smooth frequency spectrum to 'width'-Hz-wide steps."""
+        self.freqs = bp.get_epoched_bandpowers_orig(self.freqs, width)
+
+    def crop_fft_spectrum(self, low, high):
+        """Limit spectrum of frequency domain."""
+        a, b = bp.slice_freqs(self.freqs["Freq"], low, high)
+        for key in self.freqs:
+            self.freqs[key] = self.freqs[key][a:b]
 
     def destroy_time(self):
         """Overwrite channels' "Time" with sequence of natural numbers.
@@ -343,17 +352,30 @@ class BCPy:
                                 color=line_color, label=stimul.names[code])
                     has_label[code] = True
 
-    def plot_fft(self, channel, low=0.0, high=float("inf")):
-        """Plot output from compute_fft held in freq class var."""
+    def plot_fft(self, channel, low=0.0, high=float("inf"), freqs=None):
+        """Plot frequency spectrum. compute_fft() outputs it to self.freq.
+
+        Note: if you plan to plot more data with same frequency limitations,
+        use crop_fft_spectrum(low, high) and then use plot_fft[s] (faster).
+        """
+        if freqs is None:
+            freqs = self.freqs
         if low == 0.0 and high == float("inf"):
-            funcs.plot_data(self.freqs[channel], self.freqs["Freq"][0],
+            funcs.plot_data(freqs[channel], freqs["Freq"],
                             channel + " spectrum")
         else:
-            a, b = bp.slice_freqs(self.freqs["Freq"], low, high)
+            a, b = bp.slice_freqs(freqs["Freq"], low, high)
             caption = channel + " spectrum [" + str(low)\
                 + ", " + str(high) + "] Hz"
-            funcs.plot_data(self.freqs[channel][a:b],
-                            self.freqs["Freq"][a:b], label=caption)
+            funcs.plot_data(freqs[channel][a:b],
+                            freqs["Freq"][a:b], label=caption)
+
+    def plot_ffts(self):
+        """Plot frequency domain of all channels."""
+        for channel in self.freqs:
+            if channel is "Freq":
+                continue
+            self.plot_fft(channel)
 
     def plot(self, channels, discrete=False):
         """Plot non-internal structure. Useful for epoched_bandpowers."""

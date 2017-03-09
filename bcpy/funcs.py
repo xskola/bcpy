@@ -1,6 +1,7 @@
 from scipy.signal import butter, lfilter
 import matplotlib.pyplot as plt
 import inout
+import logging
 
 
 def get_epoch(struct, low, high):
@@ -13,7 +14,14 @@ def get_epoch(struct, low, high):
     if low > high:
         low, high = high, low
     if type(struct) is dict:
-        data = struct["Time"]
+        if "Time" in struct:
+            key = "Time"
+        elif "Freq" in struct:
+            key = "Freq"
+        else:
+            logging.warn("get_epoch: no index, can't do it.")
+            return
+        data = struct[key]
     elif type(struct) is list or type(struct) is tuple:
         data = struct[0]
     else:
