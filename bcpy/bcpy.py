@@ -107,6 +107,21 @@ class BCPy:
         self.values = inout.get_values_from_channels(
             self.channels, self.header)
 
+    def select_channels(self, which):
+        """Delete non-listed channels from channels structure."""
+        if "Time" not in which:
+            which.append("Time")
+
+        header = list()
+
+        for channel in self.header:
+            if channel in which:
+                header.append(channel)
+            else:
+                del self.channels[channel]
+
+        self.header = header
+
     def delete_channels(self, which):
         """Delete listed channels from channels structure."""
         for channel in which:
