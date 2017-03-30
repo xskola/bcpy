@@ -2,11 +2,11 @@
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-import funcs
-import inout
-import bp
-import stimul
-import erd
+import bcpy.funcs as funcs
+import bcpy.inout as inout
+import bcpy.bp as bp
+import bcpy.stimul as stimul
+import bcpy.erd as erd
 import logging
 
 

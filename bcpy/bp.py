@@ -1,5 +1,5 @@
 from scipy import fft, arange
-import funcs
+import bcpy.funcs as funcs
 
 
 def compute_squared_bp(channels):
@@ -91,7 +91,7 @@ def get_epoched_bandpowers_orig(channels, width=1):
 def slice_freqs(data, low, high):
     """Find indices for desired range of freqs in FFT output."""
     if low > high:  # TODO error handling
-        print "nope nope nope"
+        print("nope nope nope")
 
     it = (x[0] for x in enumerate(data) if (x[1] > low and x[1] < high))
     a = next(it)

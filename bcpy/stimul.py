@@ -1,5 +1,5 @@
-import funcs
-import bp
+import bcpy.funcs as funcs
+import bcpy.bp as bp
 
 codes = dict(
     left=769,
