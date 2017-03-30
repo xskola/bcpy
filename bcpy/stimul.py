@@ -6,6 +6,7 @@ codes = dict(
     right=770,
     eot=800,  # end of trial
     eos=1010,  # end of session
+    ssvep=32779,
 )
 
 
