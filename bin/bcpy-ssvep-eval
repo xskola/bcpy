@@ -1,0 +1,40 @@
+#!/usr/bin/python
+
+import os
+import sys
+sys.path.append(os.path.abspath('..'))
+import bcpy
+import bcpy.funcs
+from bcpy.stimul import codes
+
+code = bcpy.stimul.codes["ssvep"]
+ssvep_length = 15 # seconds
+stimul_freqs = [(19.75, 20.25), (14.75, 15.25), (11.75, 12.25)] # Hz intervals
+
+signal = bcpy.BCPy(str(sys.argv[1]), str(sys.argv[2]))
+signal.filter_channels(1, 45)
+
+for channel in signal.channels:
+    if channel is "Time":
+        continue
+    print "Channel", channel
+    for timestamp in sorted(signal.stimul_times[code]):
+        print "Time", timestamp, "to", timestamp+ssvep_length
+
+        epoch = bcpy.funcs.get_epoch(signal.channels, timestamp,
+                                     timestamp+ssvep_length)
+        freq, y = bcpy.bp.compute_fft(epoch[channel], 500)
+
+        for stimul_freq in stimul_freqs:
+            a, b = bcpy.bp.slice_freqs(freq, stimul_freq[0], stimul_freq[1])
+            avg_freq = sum(y[a:b])/len(y[a:b])
+            print stimul_freq, avg_freq
+
+        # Plot smoothed frequencies
+        a, b = bcpy.bp.slice_freqs(freq, 0.5, 45)
+        # ^^ this forces get_epoched_bandpowers to average
+        #    around multiples of hertzs instead of halves
+        freqs = {"Freq": freq[a:b], channel: y[a:b]}
+        freqs = bcpy.bp.get_epoched_bandpowers_orig(freqs, 1)
+        signal.plot_fft(channel, 0, float("inf"), freqs)
+        signal.plot_show()
