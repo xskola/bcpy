@@ -1,5 +1,5 @@
+from . import funcs
 from scipy import fft, arange
-import bcpy.funcs as funcs
 
 
 def compute_squared_bp(channels):

@@ -1,12 +1,12 @@
 #!/usr/bin/python
 
+from . import funcs
+from . import inout
+from . import bp
+from . import stimul
+from . import erd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-import bcpy.funcs as funcs
-import bcpy.inout as inout
-import bcpy.bp as bp
-import bcpy.stimul as stimul
-import bcpy.erd as erd
 import logging
 
 

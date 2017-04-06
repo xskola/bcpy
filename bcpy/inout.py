@@ -7,7 +7,7 @@ import re
 def get_csv_content(infile):
     """Open a CSV and get it contents into a list."""
     # use Dialect to guess
-    with open(infile, 'rb') as f:
+    with open(infile, 'r') as f:
         for size in [1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072]:
             try:
                 dialect = csv.Sniffer().sniff(f.read(size), ",;")

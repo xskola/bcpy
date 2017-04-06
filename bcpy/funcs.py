@@ -1,6 +1,6 @@
+from . import inout
 from scipy.signal import butter, lfilter
 import matplotlib.pyplot as plt
-import bcpy.inout as inout
 import logging
 
 
