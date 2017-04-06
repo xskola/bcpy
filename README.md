@@ -1,4 +1,4 @@
-BCPy is a tool for analysis of EEG data with focus on motor imagery brain-computer interface (MI-BCI) data analysis, such is ERD computation and plotting data with regard to stimuli in MI-BCI training. It is currently being developed and there is no stable release. It might work, though.
+BCPy is a multiplatform tool for analysis of EEG data with focus on motor imagery brain-computer interface (MI-BCI) data analysis, such is ERD computation and plotting data with regard to stimuli in MI-BCI training. It is currently being developed and there is no stable release. It might work, though.
 
 ## Examples
 
