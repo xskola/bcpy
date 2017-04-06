@@ -1,4 +1,5 @@
 from . import funcs
+import numpy as np
 from scipy import fft, arange
 
 
@@ -17,20 +18,11 @@ def compute_squared_bp(channels):
 
 def compute_fft(data, sampling_freq):
     """Compute real part of FFT and return only the side > 0."""
-    n = len(data)
-    y = fft(data)/n
-    k = arange(n)
-    T = float(n/sampling_freq)
-    freq = k/T  # two sides frequency range
-    freq = freq[range(n/2)]  # one side frequency range
-    return freq, abs(y)
-
-    # Below is the numpy version
-    # y = np.fft.fft(data)
-    # freq = np.fft.fftfreq(len(data), 1.0/sampling_freq)
-    # a = next(x[0] for x in enumerate(freq) if x[1] > 0)
-    # b = next(x[0] for x in enumerate(freq) if x[1] < 0)
-    # return freq[a:b].tolist(), np.abs(y)[a:b].tolist()
+    y = np.fft.fft(data)
+    freq = np.fft.fftfreq(len(data), 1.0/sampling_freq)
+    a = next(x[0] for x in enumerate(freq) if x[1] > 0)
+    b = next(x[0] for x in enumerate(freq) if x[1] < 0)
+    return freq[a:b].tolist(), np.abs(y)[a:b].tolist()
 
 
 def get_epoch_bp(channels, sampling_freq, channel,
@@ -66,8 +58,6 @@ def get_epoched_bandpowers(channels, width=1):
 
 
 def get_epoched_bandpowers_orig(channels, width=1):
-    import numpy as np
-    # this one is correct
     if "Time" in channels:
         index = "Time"
     elif "Freq" in channels:
@@ -90,8 +80,8 @@ def get_epoched_bandpowers_orig(channels, width=1):
 
 def slice_freqs(data, low, high):
     """Find indices for desired range of freqs in FFT output."""
-    if low > high:  # TODO error handling
-        print("nope nope nope")
+    if low > high:
+        low, high = high, low
 
     it = (x[0] for x in enumerate(data) if (x[1] > low and x[1] < high))
     a = next(it)
