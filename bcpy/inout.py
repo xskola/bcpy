@@ -15,14 +15,14 @@ def get_csv_content(infile):
             except csv.Error:
                 continue
             except MemoryError:
-                print "Error: Could not determine CSV delimiter."
+                print("Error: Could not determine CSV delimiter.")
                 sys.exit(1)
             else:
                 break
         try:
             reader = csv.reader(f, dialect)
         except UnboundLocalError:
-            print "Error reading CSV file."
+            print("Error reading CSV file.")
             sys.exit(1)
         textvalues = list(reader)
     return textvalues

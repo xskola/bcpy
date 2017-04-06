@@ -1,6 +1,6 @@
-import funcs
-import stimul
-import bp
+import bcpy.funcs as funcs
+import bcpy.stimul as stimul
+import bcpy.bp as bp
 
 
 def erd(active, rest):
