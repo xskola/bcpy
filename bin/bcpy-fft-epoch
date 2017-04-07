@@ -1,0 +1,36 @@
+#!/usr/bin/python
+#
+# Epoched FFT example
+# Plot frequency spectrum for width-long epochs throughout the recording,
+# with a step of width/2 (overlapping epochs).
+
+import os
+import sys
+sys.path.append(os.path.abspath('..'))
+import bcpy
+import bcpy.bp
+import numpy as np
+
+low = 8  # Hz
+high = 40  # Hz
+width = 60  # seconds
+channel = "sFiltered 0"
+
+signal = bcpy.BCPy(str(sys.argv[1]))
+freqs = dict()
+
+for second in np.arange(signal.channels["Time"][0],
+                        signal.channels["Time"][-1]-width,
+                        width/2):
+    start = second
+    stop = second+width
+    freq, y = bcpy.bp.get_epoch_bp(signal.channels, signal.sampling_freq,
+                                   channel, start, stop)
+    freqs["Freq"] = freq
+    freqs[str(second)] = y
+
+signal.freqs = freqs
+signal.crop_fft_spectrum(low, high)
+signal.smooth_fft(1)  # Hz step
+signal.plot_ffts()
+signal.plot_show()
