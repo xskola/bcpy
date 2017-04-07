@@ -17,12 +17,13 @@ signal = bcpy.BCPy(str(sys.argv[1]), str(sys.argv[2]))
 signal.filter_channels(5, 40)
 
 for channel in ["C4", "C3"]:
-    if channel == "sFiltered 0":
+    if channel == "C4":
         code = codes['left']
     else:
         code = codes['right']
     freq, active, baseline = signal.compute_avg_stimul_ffts(
-        channel, [code], duration=2, lowfreq=8, highfreq=30
+        channel, [code], duration=4, baseline_duration=8,
+        lowfreq=8, highfreq=30
     )
 
     diff = list()

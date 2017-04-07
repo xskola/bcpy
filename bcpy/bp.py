@@ -1,6 +1,5 @@
 from . import funcs
 import numpy as np
-from scipy import fft, arange
 
 
 def compute_squared_bp(channels):
@@ -25,16 +24,29 @@ def compute_fft(data, sampling_freq):
     return freq[a:b].tolist(), np.abs(y)[a:b].tolist()
 
 
-def get_epoch_bp(channels, sampling_freq, channel,
-                 lowfreq, highfreq, starttime, stoptime):
-    """Compute bandpower of selected epoch in selected freqs."""
-    if starttime > stoptime:
-        starttime, stoptime = stoptime, starttime
-    epoch = funcs.get_epoch(channels, starttime, stoptime)
+def epoched_fft(channels, sampling_freq, channel, begin, end,
+                width, interval=0):
+    """Compute frequency spectrum for arbitrary length using epoching."""
+    spectra = list()
+    if interval == 0:
+        interval = width
+
+    for timestamp in np.arange(begin, end, interval):
+        start = timestamp
+        stop = timestamp+width
+        freq, y = get_epoch_bp(channels, sampling_freq, channel, start, stop)
+        spectra.append(y)
+
+    y = [float(sum(val))/len(val) for val in zip(*spectra)]
+    return freq, y
+
+
+def get_epoch_bp(channels, sampling_freq, channel, begin, end):
+    """Compute block FFT bandpower of selected epoch."""
+    if begin > end:
+        begin, end = end, begin
+    epoch = funcs.get_epoch(channels, begin, end)
     freq, y = compute_fft(epoch[channel], sampling_freq)
-    low, high = slice_freqs(freq, lowfreq, highfreq)
-    freq = freq[low:high]
-    y = y[low:high]
 
     return freq, y
 

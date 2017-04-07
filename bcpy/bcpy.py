@@ -214,7 +214,8 @@ class BCPy:
                                              stim_codes, duration, offset)
 
     def compute_avg_stimul_ffts(self, channel, stim_codes, duration,
-                                lowfreq, highfreq, offset=0):
+                                baseline_duration, lowfreq, highfreq,
+                                offset=0):
         """Compute avg FFT for epoch of equal lenghts pre/post stimuli.
 
         Returns list of frequencies, active FFT, and baseline FFT spectra."""
@@ -223,7 +224,8 @@ class BCPy:
 
         return stimul.compute_avg_stimul_ffts(self.channels, channel,
                                               self.header, self.stimul_times,
-                                              stim_codes, duration, offset,
+                                              stim_codes, duration,
+                                              baseline_duration, offset,
                                               lowfreq, highfreq,
                                               self.sampling_freq)
 
@@ -240,26 +242,18 @@ class BCPy:
                                               baseline_duration,
                                               self.sampling_freq)
 
-    def compute_erds_using_fft(self, channel, lowfreq, highfreq,
-                               stimul_code,
-                               offset=0.5, duration=4,
-                               baseline_duration=2):
-        """Compute event-related (de)synchronization per stimulation point."""
-        return erd.compute_erds_using_fft(self.channels,
-                                          self.sampling_freq,
-                                          self.stimul_times,
-                                          channel, stimul_code,
-                                          lowfreq, highfreq,
-                                          offset, duration, baseline_duration)
-
-    def compute_mi_erds(self, lowfreq=8, highfreq=30):
-        """Show ERD for left/right MI and C4/C3 channels."""
-        self.compute_erd_using_fft("C3", lowfreq, highfreq, 770)
-        self.compute_erd_using_fft("C4", lowfreq, highfreq, 769)
-
     def compute_fft(self, channel):
-        """Compute Fourier transform per channel."""
+        """Compute block Fourier transform per channel."""
         freq, y = bp.compute_fft(self.channels[channel], self.sampling_freq)
+        self.freqs[channel] = list(y)
+        self.freqs["Freq"] = list(freq)
+
+    def epoched_fft(self, channel, begin=0, end=0, width=1, interval=0):
+        """Compute FFT using width-long steps each interval-second."""
+        if end == 0:
+            end = self.channels["Time"][-1] - width
+        freq, y = bp.epoched_fft(self.channels, self.sampling_freq, channel,
+                                 begin, end, width)
         self.freqs[channel] = list(y)
         self.freqs["Freq"] = list(freq)
 

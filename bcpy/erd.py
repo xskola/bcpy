@@ -80,30 +80,3 @@ def compute_erds_using_squared(channels, stimul_times, channel,
         smoothed.append(avg(epoch))
 
     return result_erd, smoothed
-
-
-def compute_erds_using_fft(channels, sampling_freq, stimul_times,
-                           channel, wanted_stimul_code,
-                           lowfreq, highfreq,
-                           offset, duration, baseline_duration):
-    """Not Really Working: Compute relative ERD/ERS for stimulation points"""
-    # The issue here is that different lengths of signal produce different
-    # results in frequency spectrum values. So I guess we need to normalize.
-    # (somehow)
-    erds = list()
-    for timestamp in stimul_times[wanted_stimul_code]:
-        # use epoching function to get slice of channels dict
-        __, active = bp.get_epoch_bp(channels, sampling_freq, channel,
-                                     lowfreq, highfreq,
-                                     timestamp+offset,
-                                     timestamp+offset+duration)
-        __, baseline = bp.get_epoch_bp(channels, sampling_freq, channel,
-                                       lowfreq, highfreq,
-                                       timestamp-baseline_duration, timestamp)
-        # compute average for the whole frequency range
-        active_avg = (sum(active)/len(active))  # /duration
-        baseline_avg = (sum(baseline)/len(baseline))  # /baseline_duration
-        avgerd = erd(active_avg, baseline_avg)
-        erds.append(avgerd)
-
-    print_erd_stats(channel, wanted_stimul_code, erds, lowfreq, highfreq)

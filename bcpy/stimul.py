@@ -65,12 +65,12 @@ def compute_avg_stimul_bps(channels, header, stimul_times,
 
 
 def compute_avg_stimul_ffts(channels, channel, header, stimul_times,
-                            stim_codes, duration, offset,
-                            lowfreq, highfreq, sampling_freq):
-    """Compute avg FFT for epoch of equal lenghts pre/post stimuli."""
+                            stim_codes, duration, baseline_duration, offset,
+                            lowfreq, highfreq, sampling_freq, width=1):
+    """Compute average spectrum for epochs pre/post stimuli."""
     epochs = dict((x, []) for x in channels.keys())
     active_bps = list()
-    rest_bps = list()
+    baseline_bps = list()
     bps = list()
 
     for stimul_code in stimul_times:
@@ -80,21 +80,28 @@ def compute_avg_stimul_ffts(channels, channel, header, stimul_times,
             continue
 
         for timestamp in stimul_times[stimul_code]:
-            active_fq, active_y = bp.get_epoch_bp(channels, sampling_freq,
-                                                  channel, lowfreq, highfreq,
-                                                  timestamp+offset,
-                                                  timestamp+offset+duration)
-            rest_fq, rest_y = bp.get_epoch_bp(channels, sampling_freq,
-                                              channel, lowfreq, highfreq,
-                                              timestamp-duration, timestamp)
+            active_fq, active_y = bp.epoched_fft(channels, sampling_freq,
+                                                 channel,
+                                                 timestamp+offset,
+                                                 timestamp+offset+duration,
+                                                 width)
+            low, high = bp.slice_freqs(active_fq, lowfreq, highfreq)
+            active_fq = active_fq[low:high]
+            active_y = active_y[low:high]
+
+            __, baseline_y = bp.epoched_fft(channels, sampling_freq,
+                                            channel,
+                                            timestamp-baseline_duration,
+                                            timestamp, width)
+            baseline_y = baseline_y[low:high]
 
             active_bps.append(active_y)
-            rest_bps.append(rest_y)
+            baseline_bps.append(baseline_y)
 
     avg_active_bp = [float(sum(col))/len(col) for col in zip(*active_bps)]
-    avg_rest_bp = [float(sum(col))/len(col) for col in zip(*rest_bps)]
+    avg_baseline_bp = [float(sum(col))/len(col) for col in zip(*baseline_bps)]
 
-    return active_fq, avg_active_bp, avg_rest_bp
+    return active_fq, avg_active_bp, avg_baseline_bp
 
 
 def pick_stimul_color(code):
