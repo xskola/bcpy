@@ -97,10 +97,6 @@ class BCPy:
         """Create class 'channel' dict with signal datapoints."""
         self.channels = inout.get_channels_from_values(
             self.values, self.header)
-        if not hasattr(self, 'unfiltered'):
-            self.unfiltered = dict()
-            for channel in self.channels:
-                self.unfiltered[channel] = self.channels[channel][:]
 
     def values_from_channels(self):
         """Create CSV-formatted list for signal datapoints before export."""
@@ -145,28 +141,20 @@ class BCPy:
             stimul_codes)
         self.stimul_times = stimul_times
 
-    def filter_channel(self, low, high, channel):
-        """Apply bandpass filter to selected channel."""
+    def filter_channel(self, low, high, channel, order=4):
+        """Apply Butterworth bandpass filter to selected channel."""
         signal = funcs.butter_bandpass_filter(
             self.channels[channel],
             low, high,
             self.sampling_freq
         )
-        self.channels[channel] = signal[:]
+        self.channels[channel] = signal
 
     def filter_channels(self, low, high):
         """Invoke filter_channel for all entries in 'channels' dict."""
         channel_list = self.header[1:]
         for channel in channel_list:
             self.filter_channel(low, high, channel)
-
-    def revert_filtering(self, channel_list=None):
-        """Revert filtering of all channels or one selected."""
-        if channel_list is None:
-            channel_list = self.header[1:]
-        for channel in channel_list:
-            self.channels[channel] = self.unfiltered[channel][:]
-        del self.squared_channels
 
     def get_epoched_bandpowers(self, width=1):
         """Compute bandpowers per epoch with 'width' of n seconds.
@@ -233,8 +221,6 @@ class BCPy:
                                    offset=0.5, duration=4,
                                    baseline_duration=2):
         """Compute event-related (de)synchronization per stimulation point."""
-        if not hasattr(self, 'squared_channels'):
-            self.compute_bp()
         return erd.compute_erds_using_squared(self.channels,
                                               self.stimul_times,
                                               channel, stimul_code,
@@ -279,7 +265,6 @@ class BCPy:
 
         This function is useful for displaying e.g. features regardless
         on the time they've been generated."""
-        self.unfiltered["Time"] = self.channels["Time"][:]
         for e, __ in enumerate(self.channels["Time"]):
             self.channels["Time"][e] = e
 

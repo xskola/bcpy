@@ -102,7 +102,7 @@ def squeeze_channels(channels, header):
 
 def butter_bandpass_filter(data, lowcut, highcut, fs, order=4):
     """Perform band pass filtering using butterworth filter."""
-    def butter_bandpass(lowcut, highcut, fs, order=5):
+    def butter_bandpass(lowcut, highcut, fs, order):
         nyq = 0.5 * fs
         low = lowcut / nyq
         high = highcut / nyq
