@@ -1,5 +1,5 @@
 from . import inout
-from scipy.signal import butter, lfilter
+from scipy.signal import butter, filtfilt, iirdesign
 import matplotlib.pyplot as plt
 import logging
 
@@ -100,17 +100,23 @@ def squeeze_channels(channels, header):
     return avg_channels, new_header
 
 
-def butter_bandpass_filter(data, lowcut, highcut, fs, order=4):
+def butter_bandpass_filter(data, lowcut, highcut, fs, setorder=False, order=4):
     """Perform band pass filtering using butterworth filter."""
     def butter_bandpass(lowcut, highcut, fs, order):
         nyq = 0.5 * fs
         low = lowcut / nyq
         high = highcut / nyq
-        b, a = butter(order, [low, high], btype='band')
+        hz = 1 / nyq
+        ws = [low-hz, high+hz]
+        if setorder is True:
+            b, a = butter(order, [low, high], btype='band')
+        else:
+            b, a = iirdesign(wp=[low, high], ws=ws,
+                             gstop=10, gpass=0.2, ftype='ellip', output='ba')
         return b, a
 
     b, a = butter_bandpass(lowcut, highcut, fs, order=order)
-    y = lfilter(b, a, data)
+    y = filtfilt(b, a, data)
     return y.tolist()
 
 

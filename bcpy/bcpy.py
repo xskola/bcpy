@@ -141,20 +141,23 @@ class BCPy:
             stimul_codes)
         self.stimul_times = stimul_times
 
-    def filter_channel(self, low, high, channel, order=4):
-        """Apply Butterworth bandpass filter to selected channel."""
+    def filter_channel(self, low, high, channel, setorder=False, order=4):
+        """Apply IIR bandpass filter to selected channel.
+
+        If setorder is not set, order is determined using SciPy's iirdesign"""
         signal = funcs.butter_bandpass_filter(
             self.channels[channel],
             low, high,
-            self.sampling_freq
+            self.sampling_freq,
+            setorder, order
         )
         self.channels[channel] = signal
 
-    def filter_channels(self, low, high):
+    def filter_channels(self, low, high, setorder=False, order=4):
         """Invoke filter_channel for all entries in 'channels' dict."""
         channel_list = self.header[1:]
         for channel in channel_list:
-            self.filter_channel(low, high, channel)
+            self.filter_channel(low, high, channel, setorder, order)
 
     def get_epoched_bandpowers(self, width=1):
         """Compute bandpowers per epoch with 'width' of n seconds.
