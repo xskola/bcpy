@@ -75,7 +75,7 @@ def get_epoched_bandpowers_orig(channels, width=1):
     elif "Freq" in channels:
         index = "Freq"
     else:
-        logging.warn("get_epoched_bandpowers_orig: no index, can't do it.")
+        logging.error("get_epoched_bandpowers_orig: error, no index (Time/Freq)")
         return
 
     result = dict((channel, []) for channel in channels)
@@ -83,9 +83,10 @@ def get_epoched_bandpowers_orig(channels, width=1):
                             channels[index][-1],
                             width):
         epoch = funcs.get_epoch(channels, second, second+width)
-        epoch_avg = funcs.get_channels_avgs(epoch)
-        for channel in epoch_avg:
-            result[channel].append(epoch_avg[channel])
+        if len(epoch[index]) != 0:
+            epoch_avg = funcs.get_channels_avgs(epoch)
+            for channel in epoch_avg:
+                result[channel].append(epoch_avg[channel])
 
     return result
 

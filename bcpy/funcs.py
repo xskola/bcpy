@@ -73,7 +73,11 @@ def get_channels_avgs(channels):
     """Compute average values for all keys in given dict of channels."""
     output = dict()
     for channel in channels.keys():
-        output[channel] = sum(channels[channel])/len(channels[channel])
+        try:
+            output[channel] = sum(channels[channel])/len(channels[channel])
+        except ZeroDivisionError:
+            logging.error("get_channels_avg: this epoch has empty channel " + channel + ".")
+            output[channel] = 0
     return output
 
 
@@ -120,7 +124,7 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, setorder=False, order=4):
     return y.tolist()
 
 
-def plot_data(data, time=None, label=None):
+def plot_data(data, time=None, label=None, log=False):
     """An overly simple wrapper for matplotlib."""
     if time is None:
         plt.plot(data, label=label)
@@ -133,8 +137,9 @@ def plot_data(data, time=None, label=None):
     # TODO
     plt.subplot()
     plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=1,
-               ncol=2, mode="expand", borderaxespad=0.)
-    # plt.yscale('log')
+               ncol=6, mode="expand", borderaxespad=0.)
+    if log is True:
+        plt.yscale('log')
     # Next step here is to get sensible zoom from the datapoint count
 
     plt.autoscale(enable=False)

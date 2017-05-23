@@ -105,6 +105,7 @@ class BCPy:
 
     def select_channels(self, which):
         """Delete non-listed channels from channels structure."""
+        logging.debug("Selecting channels: %s", ', '.join(which))
         if "Time" not in which:
             which.append("Time")
 
@@ -120,12 +121,14 @@ class BCPy:
 
     def delete_channels(self, which):
         """Delete listed channels from channels structure."""
+        logging.debug("Removing channels: %s", ', '.join(which))
         for channel in which:
             self.header.remove(channel)
             del self.channels[channel]
 
     def squeeze_channels(self):
         """Replace channels an average channel from all available ones."""
+        logging.debug("All channel have become one: Avg.")
         self.channels, self.header = funcs.squeeze_channels(self.channels,
                                                             self.header)
 
@@ -233,18 +236,27 @@ class BCPy:
 
     def compute_fft(self, channel):
         """Compute block Fourier transform per channel."""
+        logging.debug("Computing spectrum for channel %s.", channel)
         freq, y = bp.compute_fft(self.channels[channel], self.sampling_freq)
         self.freqs[channel] = list(y)
         self.freqs["Freq"] = list(freq)
 
     def epoched_fft(self, channel, begin=0, end=0, width=1, interval=0):
         """Compute FFT using width-long steps each interval-second."""
+        logging.debug("Computing epoched spectrum for channel %s with width %d.", channel, width)
         if end == 0:
             end = self.channels["Time"][-1] - width
         freq, y = bp.epoched_fft(self.channels, self.sampling_freq, channel,
                                  begin, end, width)
         self.freqs[channel] = list(y)
         self.freqs["Freq"] = list(freq)
+
+    def epoched_ffts(self, width=4):
+        """Compute epoched_fft() for all channels."""
+        for channel in self.channels:
+            if channel == "Time":
+                continue
+            self.epoched_fft(channel, width=width)
 
     def compute_ffts(self):
         """Call compute_fft() for all channels."""
@@ -359,13 +371,13 @@ class BCPy:
             freqs = self.freqs
         if low == 0.0 and high == float("inf"):
             funcs.plot_data(freqs[channel], freqs["Freq"],
-                            channel + " spectrum")
+                            channel + " spectrum", log=True)
         else:
             a, b = bp.slice_freqs(freqs["Freq"], low, high)
             caption = channel + " spectrum [" + str(low)\
                 + ", " + str(high) + "] Hz"
             funcs.plot_data(freqs[channel][a:b],
-                            freqs["Freq"][a:b], label=caption)
+                            freqs["Freq"][a:b], label=caption, log=True)
 
     def plot_ffts(self):
         """Plot frequency domain of all channels."""

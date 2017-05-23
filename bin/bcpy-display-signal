@@ -4,13 +4,57 @@
 
 import os
 import sys
-sys.path.append(os.path.abspath('..'))
+import getopt
+sys.path.append(os.path.abspath('/home/xskola/work/bcpy/'))
 import bcpy
 
-signal = bcpy.BCPy(str(sys.argv[1]))
-# signal.filter_channel(1, 40)
-# Activate 1-40 Hz filter
-signal.plot_channels()
-signal.plot_show()
-# signal.write_csv("output.csv")
-# Write output to another file. Useful (e.g.) if filtering was engaged.
+usage = """bcpy-display-signal: display signal(s)
+
+    -c      Display only selected channels. Use commas or multiple -c options for more channels.
+    -f      Filter channels in selected range. Usage: -f 1-45
+
+    The rest of the arguments shall be signal files you wish to display."""
+
+channelset = list()
+hzrange = ""
+
+try:
+    opts, args = getopt.getopt(sys.argv[1:], "c:f:h:")
+except getopt.GetoptError:
+    print usage
+    sys.exit(2)
+for opt, arg in opts:
+    if opt in ("-h"):
+        print usage
+        sys.exit()
+    elif opt in ("-f"):
+        hzrange = arg
+    elif opt in ("-c"):
+        channelset += arg.split(',')
+
+if args == []:
+    print """You need to specify at least one signal file.
+
+""" + usage
+    sys.exit(1)
+
+
+for signal in args:
+    try:
+        eeg = bcpy.BCPy(signal)
+    except (UnboundLocalError, NameError):
+        print """Error
+
+""" + usage
+        sys.exit(2)
+
+    if not channelset == []:
+        eeg.select_channels(channelset)
+
+    if not hzrange == "":
+        hzs = hzrange.split('-')
+        eeg.filter_channels(float(hzs[0]), float(hzs[1]))
+
+    eeg.plot_channels()
+
+eeg.plot_show()
