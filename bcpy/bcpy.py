@@ -243,7 +243,8 @@ class BCPy:
 
     def epoched_fft(self, channel, begin=0, end=0, width=1, interval=0):
         """Compute FFT using width-long steps each interval-second."""
-        logging.debug("Computing epoched spectrum for channel %s with width %d.", channel, width)
+        logging.debug("Computing epoched spectrum: channel %s with width %d.",
+                      channel, width)
         if end == 0:
             end = self.channels["Time"][-1] - width
         freq, y = bp.epoched_fft(self.channels, self.sampling_freq, channel,
@@ -328,12 +329,14 @@ class BCPy:
 
     def plot_features(self):
         """Plot a feature_channel."""
-        # this deserves some TODO care
-        plt.plot(self.feature_channels['Feature 1'],
-                 self.feature_channels['Feature 2'],
-                 'o', label="Features")
-        plt.xlabel('Feature')
-        plt.ylabel('Feature')
+        for feature in self.feature_channels:
+            if feature == "Time":
+                continue
+            plt.plot(self.feature_channels["Time"],
+                     self.feature_channels[feature],
+                     'o', label=feature)
+            plt.xlabel("Time")
+            plt.subplot()
         plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=1,
                    ncol=2, mode="expand", borderaxespad=0.)
 

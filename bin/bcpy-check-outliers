@@ -1,0 +1,37 @@
+#!/usr/bin/python
+# Show pruned features after outlier removal in Openvibe
+# Inputs: signal file, stimulations file, complete features, pruned features
+#
+# Non-feature files are providing context (bandpowers, stimulation timings).
+# The removal box does not keep timing of the features, that's why the timing
+# info is removed from the complete feature set before comparison.
+
+import os
+import sys
+sys.path.append(os.path.abspath('..'))
+import bcpy
+
+res = 0.2
+eeg = bcpy.BCPy(str(sys.argv[1]), str(sys.argv[2]), features=str(sys.argv[3]))
+eeg2 = bcpy.BCPy(features=str(sys.argv[4]))
+
+selected_features = list()
+
+for feature in eeg.feature_values:
+    feature_time = feature[0]
+    feature[0] = 0
+    if feature not in eeg2.feature_values:
+        feature[0] = feature_time
+        selected_features.append(feature)
+
+print str(len(selected_features)) + " features pruned"
+
+eeg.feature_values = selected_features
+eeg.feature_channels = bcpy.inout.get_channels_from_values(eeg.feature_values,
+                                                           eeg.feature_header)
+
+eeg.plot_stimulations()  # or eeg.plot_channels()
+eeg.filter_channels(8, 30)
+eeg.plot(eeg.get_epoched_bandpowers(res))
+eeg.plot_features()
+eeg.plot_show()
